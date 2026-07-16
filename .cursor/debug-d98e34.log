@@ -1,0 +1,7 @@
+{"sessionId":"d98e34","runId":"pre-fix","hypothesisId":"A","location":"proxy.ts:middleware","message":"middleware request","data":{"path":"/","userId":null,"isPublic":false},"timestamp":1784244933209}
+{"sessionId":"d98e34","runId":"pre-fix","hypothesisId":"A","location":"proxy.ts:middleware","message":"middleware request","data":{"path":"/c/test-id","userId":null,"isPublic":false},"timestamp":1784244933865}
+{"sessionId":"d98e34","runId":"pre-fix","hypothesisId":"A","location":"proxy.ts:middleware","message":"middleware request","data":{"path":"/","userId":"user_3GVhWQssTPTbyrGu84xfOOLA6Fg","isPublic":false},"timestamp":1784245058832}
+{"sessionId":"d98e34","runId":"pre-fix","hypothesisId":"B","location":"app/(root)/page.tsx:Home","message":"root page rendered","data":{"route":"/"},"timestamp":1784245059335}
+{"sessionId":"d98e34","runId":"pre-fix","hypothesisId":"A","location":"app/(root)/layout.tsx:before-protect","message":"root layout before protect","data":{"layoutUserId":"user_3GVhWQssTPTbyrGu84xfOOLA6Fg"},"timestamp":1784245059531}
+{"sessionId":"d98e34","runId":"pre-fix","hypothesisId":"A","location":"app/(root)/layout.tsx:after-protect","message":"root layout after protect","data":{"protected":true},"timestamp":1784245059553}
+{"sessionId":"d98e34","runId":"pre-fix","hypothesisId":"C","location":"features/auth/action/onboard.ts:onBoard","message":"onBoard user check","data":{"hasClerkUser":true},"timestamp":1784245060896}

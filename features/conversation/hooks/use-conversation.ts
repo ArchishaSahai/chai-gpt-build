@@ -9,7 +9,7 @@ import {
     deleteConversation,
     listConversations,
     updateConversation,
-} from "@/prisma/features/conversation/actions/conversation-actions";
+} from "@/features/conversation/actions/conversation-actions";
 import { queryKeys } from "../utils/query-keys";
 
 
