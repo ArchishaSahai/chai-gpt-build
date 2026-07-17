@@ -11,3 +11,8 @@ export const DEFAULT_CHAT_MODEL = "gpt-4o-mini";
 export function getChatModel(modelId?: string | null) {
     return openai(modelId || DEFAULT_CHAT_MODEL)
 }
+
+console.log(
+  "OPENAI KEY:",
+  process.env.OPENAI_API_KEY?.slice(0, 15)
+);

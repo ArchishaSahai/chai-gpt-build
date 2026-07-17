@@ -1,13 +1,8 @@
 import type { NextConfig } from "next";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 
-const turbopackRoot = path.dirname(fileURLToPath(import.meta.url));
-
+/** Next.js application configuration. */
 const nextConfig: NextConfig = {
-  turbopack: {
-    root: turbopackRoot,
-  },
+  /* config options here */
 };
 
 export default nextConfig;
