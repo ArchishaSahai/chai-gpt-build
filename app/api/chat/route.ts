@@ -60,21 +60,21 @@ export async function POST(req: Request) {
 
     stopWhen: stepCountIs(5),
 });
-    result.consumeStream();
-
-    return createUIMessageStreamResponse({
-        stream:toUIMessageStream({
-           stream:result.stream,
-           originalMessages:messages,
-           generateMessageId:createIdGenerator({prefix:"msg" , size:16}),
-           onEnd:async({messages:finalMessages})=>{
-            try {
-                await saveChatMessages(id , finalMessages , {updateTitle:false})
-            } catch (error) {
-                console.error(error);
-            }
-           }
-        })
-    })
+    return result.toUIMessageStreamResponse({
+  originalMessages: messages,
+  generateMessageId: createIdGenerator({
+    prefix: "msg",
+    size: 16,
+  }),
+  onFinish: async ({ messages: finalMessages }) => {
+    try {
+      await saveChatMessages(id, finalMessages, {
+        updateTitle: false,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  },
+});
 
 }
