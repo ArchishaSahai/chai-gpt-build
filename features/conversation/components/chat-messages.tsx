@@ -47,12 +47,17 @@ export function ChatMessages({ messages, status }: ChatMessagesProps) {
         ))}
 
         {isWaiting ? (
-          <Message from="assistant">
-            <MessageContent>
-              <Loader />
-            </MessageContent>
-          </Message>
-        ) : null}
+  <Message from="assistant">
+    <MessageContent>
+      <div className="flex items-center gap-2">
+        <Loader />
+        <span className="text-sm text-muted-foreground">
+          🔎 Searching the web and thinking...
+        </span>
+      </div>
+    </MessageContent>
+  </Message>
+) : null}
       </ConversationContent>
    
     </Conversation>

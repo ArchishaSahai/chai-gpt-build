@@ -10,9 +10,9 @@ export const webSearchTool = tool({
   }),
 
   execute: async ({ query }) => {
-    console.log("🔎 WEB SEARCH TOOL CALLED:", query);
-    console.log(process.env.TAVILY_API_KEY);
+  console.log("WEB SEARCH TOOL CALLED:", query);
 
+  try {
     const response = await fetch("https://api.tavily.com/search", {
       method: "POST",
       headers: {
@@ -21,24 +21,18 @@ export const webSearchTool = tool({
       },
       body: JSON.stringify({
         query,
-        search_depth: "advanced",
+        search_depth: "basic",
         include_answer: true,
-        include_raw_content: false,
         include_images: false,
-        max_results: 5,
+        max_results: 3,
       }),
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error("❌ Tavily Error:", error);
-      throw new Error("Failed to perform web search.");
+      throw new Error(await response.text());
     }
 
     const data = await response.json();
-
-    console.log("✅ Tavily Response:");
-    console.dir(data, { depth: null });
 
     return {
       answer: data.answer,
@@ -49,5 +43,13 @@ export const webSearchTool = tool({
           content: item.content,
         })) ?? [],
     };
-  },
+  } catch (error) {
+    console.error("Web Search Error:", error);
+
+    return {
+      error:
+        "Web search is temporarily unavailable. Please answer using your existing knowledge.",
+    };
+  }
+},
 });
