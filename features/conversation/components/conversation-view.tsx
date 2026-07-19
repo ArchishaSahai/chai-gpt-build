@@ -11,6 +11,8 @@ import { toast } from 'sonner';
 import { ChatEmpty } from './chat-empty';
 import { ChatMessages } from './chat-messages';
 import { ChatComposer } from './chat-composer';
+import { BranchNavigation } from './branch-navigation';
+import { useCreateConversationBranch } from '../hooks/use-conversation';
 
 type ConversationViewProps = {
     conversationId: string;
@@ -24,6 +26,7 @@ export const ConversationView = ({ conversationId, initialMessages }: Conversati
 
     const queryClient = useQueryClient();
     const { data: conversations } = useConversations();
+    const createBranch = useCreateConversationBranch();
 
     const transport = useMemo(() => new DefaultChatTransport({
         api: "/api/chat",
@@ -56,12 +59,19 @@ export const ConversationView = ({ conversationId, initialMessages }: Conversati
                 <SidebarTrigger />
                 <Separator orientation="vertical" className="mx-1 h-4" />
                 <h1 className="truncate text-sm font-medium">{title}</h1>
+                <BranchNavigation conversationId={conversationId} />
             </header>
 
             {messages.length === 0 ? (
                 <ChatEmpty />
             ) : (
-                <ChatMessages messages={messages} status={status} />
+                <ChatMessages
+                    messages={messages}
+                    status={status}
+                    onBranch={(messageId) =>
+                        createBranch.mutate({ conversationId, messageId })
+                    }
+                />
             )}
 
             <ChatComposer

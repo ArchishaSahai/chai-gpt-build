@@ -13,6 +13,8 @@ export type ConversationListItem = {
     lastMessageAt: Date;
     createdAt: Date;
     updatedAt: Date;
+    parentConversationId: string | null;
+    branchFromMessageId: string | null;
 };
 
 
@@ -66,8 +68,102 @@ export async function listConversations(): Promise<ConversationListItem[]> {
             lastMessageAt: true,
             createdAt: true,
             updatedAt: true,
+            parentConversationId: true,
+            branchFromMessageId: true,
         },
     })
+}
+
+/**
+ * Lists the current conversation's fork group: its parent (or itself) and
+ * every direct branch from that conversation.
+ */
+export async function listConversationBranches(conversationId: string) {
+    const user = await requireUser();
+    const conversation = await assertOwnsConversation(conversationId, user.id);
+    const branchPointId = conversation.parentConversationId ?? conversation.id;
+
+    return prisma.conversation.findMany({
+        where: {
+            userId: user.id,
+            OR: [
+                { id: branchPointId },
+                { parentConversationId: branchPointId },
+            ],
+        },
+        orderBy: { createdAt: "asc" },
+        select: {
+            id: true,
+            title: true,
+            parentConversationId: true,
+            branchFromMessageId: true,
+        },
+    });
+}
+
+/**
+ * Creates a new conversation branch containing the selected message and all
+ * preceding messages. The source conversation and its messages are unchanged.
+ */
+export async function createConversationBranch(
+    conversationId: string,
+    messageId: string
+) {
+    const user = await requireUser();
+
+    const branch = await prisma.$transaction(async (tx) => {
+        const source = await tx.conversation.findFirst({
+            where: { id: conversationId, userId: user.id },
+        });
+
+        if (!source) {
+            throw new Error("Conversation not found");
+        }
+
+        const messages = await tx.message.findMany({
+            where: { conversationId },
+            orderBy: { createdAt: "asc" },
+        });
+        const selectedIndex = messages.findIndex((message) => message.id === messageId);
+
+        if (selectedIndex === -1) {
+            throw new Error("Message not found");
+        }
+
+        const copiedMessages = messages.slice(0, selectedIndex + 1);
+        const conversation = await tx.conversation.create({
+            data: {
+                userId: user.id,
+                title: `${source.title} (branch)`,
+                model: source.model,
+                systemPrompt: source.systemPrompt,
+                parentConversationId: source.id,
+                branchFromMessageId: messageId,
+                lastMessageAt: copiedMessages.at(-1)?.createdAt ?? new Date(),
+            },
+        });
+
+        if (copiedMessages.length) {
+            await tx.message.createMany({
+                data: copiedMessages.map((message) => ({
+                    conversationId: conversation.id,
+                    role: message.role,
+                    status: message.status,
+                    content: message.content,
+                    parts: message.parts ?? undefined,
+                    metadata: message.metadata ?? undefined,
+                    createdAt: message.createdAt,
+                    updatedAt: message.updatedAt,
+                })),
+            });
+        }
+
+        return conversation;
+    });
+
+    revalidatePath("/");
+    revalidatePath(`/c/${conversationId}`);
+    return branch;
 }
 
 /**

@@ -36,13 +36,18 @@ model Conversation {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   lastMessageAt DateTime @default(now())
+  parentConversationId String?
+  branchFromMessageId String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentConversation Conversation? @relation("ConversationBranches", fields: [parentConversationId], references: [id], onDelete: SetNull)
+  branches Conversation[] @relation("ConversationBranches")
 
   messages Message[]
 
   @@index([userId, lastMessageAt(sort: Desc)])
   @@index([userId, isPinned, lastMessageAt(sort: Desc)])
+  @@index([parentConversationId, lastMessageAt(sort: Desc)])
 }
 
 enum MessageRole {
