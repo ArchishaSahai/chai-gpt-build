@@ -29,36 +29,48 @@ function getMessageText(message: UIMessage) {
 type ChatMessagesProps = {
   messages: UIMessage[];
   status: ChatStatus;
+  persistedMessageIds: ReadonlySet<string>;
   onBranch: (messageId: string) => void;
 };
 
 /**
  * Renders the conversation message list with markdown responses and a loading indicator.
  */
-export function ChatMessages({ messages, status, onBranch }: ChatMessagesProps) {
+export function ChatMessages({
+  messages,
+  status,
+  persistedMessageIds,
+  onBranch,
+}: ChatMessagesProps) {
   const isWaiting =
     status === "submitted" && messages.at(-1)?.role === "user";
 
   return (
     <Conversation>
       <ConversationContent className="py-8">
-        {messages.map((message) => (
-          <Message key={message.id} from={message.role}>
-            <MessageContent>
-              <MessageResponse>{getMessageText(message)}</MessageResponse>
-            </MessageContent>
-            <MessageActions>
-              <MessageAction
-                tooltip="Create branch from here"
-                label="Create branch from this message"
-                onClick={() => onBranch(message.id)}
-                disabled={status !== "ready"}
-              >
-                <GitBranchIcon />
-              </MessageAction>
-            </MessageActions>
-          </Message>
-        ))}
+        {messages.map((message) => {
+          const canCreateBranch =
+            status === "ready" && persistedMessageIds.has(message.id);
+
+          return (
+            <Message key={message.id} from={message.role}>
+              <MessageContent>
+                <MessageResponse>{getMessageText(message)}</MessageResponse>
+              </MessageContent>
+              {canCreateBranch ? (
+                <MessageActions className="opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+                  <MessageAction
+                    tooltip="Create branch from here"
+                    label="Create branch from this message"
+                    onClick={() => onBranch(message.id)}
+                  >
+                    <GitBranchIcon />
+                  </MessageAction>
+                </MessageActions>
+              ) : null}
+            </Message>
+          );
+        })}
 
         {isWaiting ? (
           <Message from="assistant">

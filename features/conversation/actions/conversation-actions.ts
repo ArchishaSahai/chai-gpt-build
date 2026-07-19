@@ -82,8 +82,9 @@ export async function listConversationBranches(conversationId: string) {
     const user = await requireUser();
     const conversation = await assertOwnsConversation(conversationId, user.id);
     const branchPointId = conversation.parentConversationId ?? conversation.id;
+    const branchQueryStartedAt = performance.now();
 
-    return prisma.conversation.findMany({
+    const branches = await prisma.conversation.findMany({
         where: {
             userId: user.id,
             OR: [
@@ -99,6 +100,14 @@ export async function listConversationBranches(conversationId: string) {
             branchFromMessageId: true,
         },
     });
+
+    console.info("[chat-profile]", {
+        step: "Branch queries",
+        durationMs: Math.round(performance.now() - branchQueryStartedAt),
+        conversationId,
+    });
+
+    return branches;
 }
 
 /**
@@ -120,10 +129,16 @@ export async function createConversationBranch(
             throw new Error("Conversation not found");
         }
 
-        const messages = await tx.message.findMany({
-            where: { conversationId },
-            orderBy: { createdAt: "asc" },
-        });
+        const [messages, existingBranches] = await Promise.all([
+            tx.message.findMany({
+                where: { conversationId },
+                orderBy: { createdAt: "asc" },
+            }),
+            tx.conversation.findMany({
+                where: { parentConversationId: source.id },
+                select: { title: true },
+            }),
+        ]);
         const selectedIndex = messages.findIndex((message) => message.id === messageId);
 
         if (selectedIndex === -1) {
@@ -131,10 +146,17 @@ export async function createConversationBranch(
         }
 
         const copiedMessages = messages.slice(0, selectedIndex + 1);
+        const existingTitles = new Set(existingBranches.map((branch) => branch.title));
+        let branchNumber = existingBranches.length + 1;
+
+        while (existingTitles.has(`Branch ${branchNumber}`)) {
+            branchNumber += 1;
+        }
+
         const conversation = await tx.conversation.create({
             data: {
                 userId: user.id,
-                title: `${source.title} (branch)`,
+                title: `Branch ${branchNumber}`,
                 model: source.model,
                 systemPrompt: source.systemPrompt,
                 parentConversationId: source.id,

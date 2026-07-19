@@ -4,7 +4,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useQueryClient } from '@tanstack/react-query';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 import { useChat } from "@ai-sdk/react"
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useConversations } from '../hooks/use-conversation';
 import { queryKeys } from '../utils/query-keys';
 import { toast } from 'sonner';
@@ -27,6 +27,9 @@ export const ConversationView = ({ conversationId, initialMessages }: Conversati
     const queryClient = useQueryClient();
     const { data: conversations } = useConversations();
     const createBranch = useCreateConversationBranch();
+    const [persistedMessageIds, setPersistedMessageIds] = useState(
+        () => new Set(initialMessages.map((message) => message.id))
+    );
 
     const transport = useMemo(() => new DefaultChatTransport({
         api: "/api/chat",
@@ -41,7 +44,10 @@ export const ConversationView = ({ conversationId, initialMessages }: Conversati
         id: conversationId,
         messages: initialMessages,
         transport,
-        onFinish: () => {
+        onFinish: ({ messages: finishedMessages, isError }) => {
+            if (!isError) {
+                setPersistedMessageIds(new Set(finishedMessages.map((message) => message.id)));
+            }
             void queryClient.invalidateQueries({
                 queryKey: queryKeys.conversations.all,
             });
@@ -68,6 +74,7 @@ export const ConversationView = ({ conversationId, initialMessages }: Conversati
                 <ChatMessages
                     messages={messages}
                     status={status}
+                    persistedMessageIds={persistedMessageIds}
                     onBranch={(messageId) =>
                         createBranch.mutate({ conversationId, messageId })
                     }
