@@ -34,7 +34,8 @@ function toUIMessageParts(
 export async function loadChatMessages(
   conversationId: string
 ): Promise<UIMessage[]> {
-  const rows = await prisma.message.findMany({
+  const rows: Awaited<ReturnType<typeof prisma.message.findMany>> =
+  await prisma.message.findMany({
     where: { conversationId },
     orderBy: { createdAt: "asc" },
   });
