@@ -17,6 +17,7 @@ import {
   useDeleteConversation,
   useUpdateConversation,
 } from "@/features/conversation/hooks/use-conversation";
+import type { ConversationBranch } from "@/features/conversation/actions/conversation-actions";
 
 /** Compact switcher for a conversation and its direct branches. */
 export function BranchNavigation({ conversationId }: { conversationId: string }) {
@@ -29,7 +30,9 @@ export function BranchNavigation({ conversationId }: { conversationId: string })
     return null;
   }
 
-  const currentIndex = branches.findIndex((branch) => branch.id === conversationId);
+  const currentIndex = branches.findIndex(
+    (branch: ConversationBranch) => branch.id === conversationId
+  );
   const currentBranch = branches[currentIndex];
 
   function handleRename() {
@@ -51,7 +54,7 @@ export function BranchNavigation({ conversationId }: { conversationId: string })
       <DropdownMenuContent align="start" className="min-w-52">
         <DropdownMenuLabel>Conversation branches</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {branches.map((branch, index) => (
+        {branches.map((branch: ConversationBranch, index) => (
           <DropdownMenuItem
             key={branch.id}
             onClick={() => router.push(`/c/${branch.id}`)}

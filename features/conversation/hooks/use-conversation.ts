@@ -12,6 +12,7 @@ import {
     listConversationBranches,
     updateConversation,
 } from "@/features/conversation/actions/conversation-actions";
+import type { ConversationBranch } from "@/features/conversation/actions/conversation-actions";
 import { queryKeys } from "../utils/query-keys";
 
 
@@ -103,7 +104,7 @@ export function useDeleteConversation(activeId?: string) {
 
 /** Loads the original conversation and its direct branches for navigation. */
 export function useConversationBranches(conversationId: string) {
-    return useQuery({
+    return useQuery<ConversationBranch[]>({
         queryKey: queryKeys.conversations.branches(conversationId),
         queryFn: () => listConversationBranches(conversationId),
     });

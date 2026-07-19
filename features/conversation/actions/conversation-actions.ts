@@ -18,6 +18,14 @@ export type ConversationListItem = {
     branchFromMessageId: string | null;
 };
 
+/** Minimal conversation shape used by the branch navigation UI. */
+export type ConversationBranch = {
+    id: string;
+    title: string;
+    parentConversationId: string | null;
+    branchFromMessageId: string | null;
+};
+
 
 /**
  * Verifies that a conversation exists and belongs to the given user.
@@ -79,7 +87,9 @@ export async function listConversations(): Promise<ConversationListItem[]> {
  * Lists the current conversation's fork group: its parent (or itself) and
  * every direct branch from that conversation.
  */
-export async function listConversationBranches(conversationId: string) {
+export async function listConversationBranches(
+    conversationId: string
+): Promise<ConversationBranch[]> {
     const user = await requireUser();
     const conversation = await assertOwnsConversation(conversationId, user.id);
     const branchPointId = conversation.parentConversationId ?? conversation.id;
