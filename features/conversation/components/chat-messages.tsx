@@ -6,7 +6,6 @@ import type { ChatStatus } from "ai";
 import {
   Conversation,
   ConversationContent,
-  ConversationScrollButton,
 } from "@/components/ai-elements/conversation";
 import {
   Message,

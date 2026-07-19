@@ -2,6 +2,7 @@
 
 import { requireUser } from "@/features/auth/action/require-user";
 import { prisma } from "@/lib/db";
+import type { Message } from "@/lib/generated/prisma/client";
 import { revalidatePath } from "next/cache";
 
 /** Shape of a conversation row returned in the sidebar list. */
@@ -129,7 +130,10 @@ export async function createConversationBranch(
             throw new Error("Conversation not found");
         }
 
-        const [messages, existingBranches] = await Promise.all([
+        const [messages, existingBranches]: [
+            Message[],
+            { title: string }[],
+        ] = await Promise.all([
             tx.message.findMany({
                 where: { conversationId },
                 orderBy: { createdAt: "asc" },
